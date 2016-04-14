@@ -27,6 +27,15 @@ ssl_ca                          =
 ssl_cert                        =
 ssl_key                         =
 
+[protocol.mysql]
+address = localhost:32275
+user = admin
+password = secret
+disable_authentication = no
+ssl_ca =
+ssl_cert =
+ssl_key =
+
 [executor]
 executors                       = 5
 

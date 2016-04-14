@@ -9,4 +9,5 @@
       - include: tasks/fabric-node-config.yml
       - include: tasks/mysql-56-server.yml
       - include: tasks/fabric-connector.yml
+      - include: tasks/fabric-mysql-secure.yml
       - include: tasks/fabric-node-mysql-user.yml
