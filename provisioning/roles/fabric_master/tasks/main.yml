@@ -1,0 +1,6 @@
+- include: fabric-packages.yml
+- include: fabric-ha-packages.yml
+- include: fabric-master-config.yml
+- include: fabric-master-services.yml
+- include: fabric-master-initialise.yml
+- include: monit-config.yml

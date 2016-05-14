@@ -1,0 +1,2 @@
+- include: fabric-master-primary-config.yml
+- include: fabric-master-primary-initialise.yml

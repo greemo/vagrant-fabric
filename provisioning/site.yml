@@ -1,0 +1,2 @@
+- include: fabric-masters.yml
+- include: fabric-slaves.yml

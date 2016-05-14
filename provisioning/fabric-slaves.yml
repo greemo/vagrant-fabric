@@ -1,0 +1,3 @@
+- hosts: stores
+  roles:
+      - fabric_slave

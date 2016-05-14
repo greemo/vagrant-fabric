@@ -1,0 +1,18 @@
+# This will install the database as well if it doesn't exist.
+- name: Start the mysql instance
+  service: name=mysqld state=started enabled=yes
+
+# MySQL Fabric uses the 'fabric_slave' user account to access all MySQL servers that it will manage.
+# In other words, the 'fabric_slave' user must be created on all slave MySQL servers
+- name: Adding slave mysql user
+  mysql_user:
+    login_host: '127.0.0.1'
+    login_port: 3306
+    login_user: root
+    login_password: ""
+    name: fabric_slave
+    host: 'localhost'
+    password: f4bric
+    priv: "fabric.*:ALTER,CREATE,DELETE,DROP,INSERT,SELECT,UPDATE/*.*:DELETE,PROCESS,RELOAD,REPLICATION CLIENT,REPLICATION SLAVE"
+    state: present
+

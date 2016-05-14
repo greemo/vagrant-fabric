@@ -1,2 +1,0 @@
-- name: Installing MySQL utilities
-  yum: pkg=mysql-utilities state=latest

@@ -1,0 +1,48 @@
+- name: Install HA clustering repo
+  get_url:
+    url: http://download.opensuse.org/repositories/network:/ha-clustering:/Stable/CentOS_CentOS-6/network:ha-clustering:Stable.repo
+    dest: /etc/yum.repos.d/network:ha-clustering:Stable.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Disable HA clustering repo
+  ini_file: dest=/etc/yum.repos.d/network:ha-clustering:Stable.repo
+            section=network_ha-clustering_Stable
+            option=enabled
+            value=0
+
+- name: Install DRBD utilities
+  yum: name=drbd83-utils state=latest
+
+- name: Install DRBD kernel module
+  yum: name=kmod-drbd83 state=latest
+
+- name: Install Corosync
+  yum: name=corosync state=latest
+
+- name: Install Pacemaker
+  yum: name=pacemaker state=latest
+
+- name: Enable HA clustering repo
+  ini_file: dest=/etc/yum.repos.d/network:ha-clustering:Stable.repo
+            section=network_ha-clustering_Stable
+            option=enabled
+            value=1
+
+- name: Ensure Pacemaker shell is installed.
+  yum:
+    name: crmsh
+    state: latest
+
+- name: Disable HA clustering repo
+  ini_file: dest=/etc/yum.repos.d/network:ha-clustering:Stable.repo
+            section=network_ha-clustering_Stable
+            option=enabled
+            value=0
+
+- name: Install Service runlevel configuration tool (ntsysv)
+  yum: name=ntsysv state=latest
+
+- name: Install Asynchronous IO library (libaio)
+  yum: name=libaio state=latest

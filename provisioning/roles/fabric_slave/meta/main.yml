@@ -1,0 +1,3 @@
+dependencies:
+    - { role: fabric_host }
+    - { role: mysql_server }

@@ -1,0 +1,29 @@
+- name: Add the drbd resource file.
+  copy: src=etc/drbd.d/clusterdb.res dest=/etc/drbd.d/clusterdb.res
+
+- name: Check if the drbd clusterdb resource is already created.
+  command: drbdadm dump-md clusterdb
+  ignore_errors: True
+  register: md_status
+
+- name: Create the drbd clusterdb resource
+  command: drbdadm create-md clusterdb
+  when: md_status.rc == 255
+
+- name: Install the corosync config file
+  copy: src=etc/corosync/corosync.conf dest=/etc/corosync/corosync.conf
+
+- name: Install the corosync authkey
+  copy: src=etc/corosync/authkey dest=/etc/corosync/authkey mode=0400
+
+- name: add the pacemaker file in the folder service.d for corosync configuration
+  copy: src=etc/corosync/service.d/pcmk dest=/etc/corosync/service.d/pcmk
+
+- name: Install the pacemaker mysql-fabric resource
+  copy: src=ocf/mysql-fabric dest=/usr/lib/ocf/resource.d/heartbeat/mysql-fabric mode=0755
+
+- name: Install the mysql-fabric-master service script
+  copy: src=etc/init.d/mysql-fabric-master dest=/etc/init.d/mysql-fabric-master mode=0755
+
+- name: Install the mysql-fabric-master sysconfig settings
+  copy: src=etc/sysconfig/mysql-fabric-master dest=/etc/sysconfig/mysql-fabric-master

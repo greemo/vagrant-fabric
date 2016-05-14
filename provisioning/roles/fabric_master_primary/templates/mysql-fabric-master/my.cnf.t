@@ -1,0 +1,41 @@
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/5.6/en/server-configuration-defaults.html
+
+[mysqld]
+#
+# Remove leading # and set to the amount of RAM for the most important data
+# cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
+innodb_buffer_pool_size = 64M
+#
+# Remove leading # to turn on a very important data integrity option: logging
+# changes to the binary log between backups.
+log_bin=mysql-bin
+gtid-mode=ON
+binlog_format=ROW
+enforce-gtid-consistency
+log_slave_updates
+skip-slave-start
+
+server_id = {{ server_id }}
+
+port=13306
+
+#
+# Remove leading # to set options mainly useful for reporting servers.
+# The server defaults are faster for transactions and fast SELECTs.
+# Adjust sizes as needed, experiment to find the optimal values.
+# join_buffer_size = 128M
+# sort_buffer_size = 2M
+# read_rnd_buffer_size = 2M
+datadir=/var/lib/mysql-fabric-master/data
+socket=/var/run/mysqld/mysql-fabric-master.sock
+
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+
+# Recommended in standard MySQL setup
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+
+[mysqld_safe]
+log-error=/var/log/mysql-fabric-master.log
+pid-file=/var/run/mysqld/mysql-fabric-master.pid

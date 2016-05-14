@@ -1,0 +1,5 @@
+- hosts: masters
+  roles:
+    - { role: fabric_master }
+    - { role: fabric_master_primary, when: "primary is defined and primary" }
+

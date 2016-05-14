@@ -1,0 +1,32 @@
+# This will install the database as well if it doesn't exist.
+- name: Start the mysql-fabric-master instance
+  service: name=mysql-fabric-master state=started enabled=no
+
+# MySQL Fabric uses the 'fabric_master' user account to access the master MySQL server.
+# The master mysql server is that which holds the fabric node data, not the main db data.
+- name: Adding master mysql user
+  mysql_user:
+    login_host: '127.0.0.1'
+    login_port: 13306
+    login_user: root
+    login_password: ""
+    name: fabric_master
+    host: 'localhost'
+    password: f4bric
+    priv: "fabric.*:ALTER,CREATE,CREATE VIEW,DELETE,DROP,EVENT,INDEX,INSERT,REFERENCES,SELECT,UPDATE"
+    state: present
+
+- name: Check if the fabric store is already in the database
+  shell: mysql -S /var/run/mysqld/mysql-fabric-master.sock -e 'SHOW DATABASES;' | grep fabric
+  register: fabric_store_status
+  ignore_errors: True
+
+- name: Create the fabric state store in the database
+  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg --param protocol.xmlrpc.address=localhost:32274 --param protocol.mysql.address=localhost:32275 manage setup
+  when: fabric_store_status.rc != 0
+
+- name: Install temporary pacemaker config
+  copy: src=tmp/pacemaker-conf dest=/tmp/pacemaker-conf
+
+- name: Set up pacemaker
+  command: crm configure load update /tmp/pacemaker-conf

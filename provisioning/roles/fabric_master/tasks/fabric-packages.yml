@@ -1,0 +1,5 @@
+- name: Installing MySQL-python
+  yum: pkg=MySQL-python state=latest
+
+- name: Installing MySQL utilities
+  yum: pkg=mysql-utilities state=latest
