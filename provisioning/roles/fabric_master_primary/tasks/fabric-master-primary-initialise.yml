@@ -26,10 +26,10 @@
   when: fabric_store_status.rc != 0
 
 - name: Install temporary pacemaker config
-  copy: src=tmp/pacemaker-conf dest=/tmp/pacemaker-conf
+  copy: src=tmp/cib.xml dest=/tmp/cib.xml
 
 - name: Set up pacemaker
-  command: crm configure load update /tmp/pacemaker-conf
+  command: pcs cluster cib-push /tmp/cib.xml
 
 # - name: Add slave nodes to the ha group
 # mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group create ha

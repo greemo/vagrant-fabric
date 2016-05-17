@@ -23,13 +23,5 @@
 - name: Adding the /etc/my.cnf file.
   template: src=mysql-fabric-master/my.cnf.t dest=/var/lib/mysql-fabric-master/my.cnf
 
-- name: Turn off quorum policy as we only have 2 nodes
-  command: crm configure property no-quorum-policy=ignore
-
-- name: Turn off stonith as we only have 2 nodes
-  command: crm configure property stonith-enabled=false
-
-- name: Configure resource stickiness for corosync
-  command: crm configure rsc_defaults resource-stickiness=100
 
 

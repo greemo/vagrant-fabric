@@ -10,11 +10,11 @@
   command: drbdadm create-md clusterdb
   when: md_status.rc == 255
 
-- name: Install the corosync config file
-  copy: src=etc/corosync/corosync.conf dest=/etc/corosync/corosync.conf
+- name: Install the ccs config file
+  copy: src=etc/cluster/cluster.conf dest=/etc/cluster/cluster.conf
 
-- name: Install the corosync authkey
-  copy: src=etc/corosync/authkey dest=/etc/corosync/authkey mode=0400
+- name: Install the cman sysconfig settings (disable quorum)
+  copy: src=etc/sysconfig/cman dest=/etc/sysconfig/cman
 
 - name: add the pacemaker file in the folder service.d for corosync configuration
   copy: src=etc/corosync/service.d/pcmk dest=/etc/corosync/service.d/pcmk

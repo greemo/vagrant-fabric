@@ -1,5 +1,5 @@
-- name: ensure corosync is running (and automatically at boot time)
-  service: name=corosync state=started enabled=yes
+- name: ensure cman is running (and automatically at boot time)
+  service: name=cman state=started enabled=yes
 
 - name: ensure Pacemaker is running (and automatically at boot time)
   service: name=pacemaker state=started enabled=yes

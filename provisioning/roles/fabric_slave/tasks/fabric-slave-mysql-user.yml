@@ -34,6 +34,12 @@
             option=skip-slave-start
             value=true
 
+- name: Set the Mysql server id
+  ini_file: dest=/etc/my.cnf
+            section=mysqld
+            option=server-id
+            value={{ server_id }}
+
 # This will install the database as well if it doesn't exist.
 - name: Start the mysql instance
   service: name=mysqld state=restarted enabled=yes
