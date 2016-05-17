@@ -30,3 +30,11 @@
 
 - name: Set up pacemaker
   command: crm configure load update /tmp/pacemaker-conf
+
+# - name: Add slave nodes to the ha group
+# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group create ha
+# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node1
+# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node2
+# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group promote ha
+# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group activate ha
+

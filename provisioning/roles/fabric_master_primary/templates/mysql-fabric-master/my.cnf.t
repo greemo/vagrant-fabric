@@ -6,7 +6,7 @@
 # Remove leading # and set to the amount of RAM for the most important data
 # cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
 innodb_buffer_pool_size = 64M
-#
+
 # Remove leading # to turn on a very important data integrity option: logging
 # changes to the binary log between backups.
 log_bin=mysql-bin

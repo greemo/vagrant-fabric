@@ -27,3 +27,6 @@
 
 - name: Install the mysql-fabric-master sysconfig settings
   copy: src=etc/sysconfig/mysql-fabric-master dest=/etc/sysconfig/mysql-fabric-master
+
+- name: Remove the default mysql-fabric config file. Our one will be added by the primary node.
+  file: path=/etc/mysql/fabric.cfg state=absent
