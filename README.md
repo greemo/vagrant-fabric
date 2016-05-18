@@ -32,10 +32,14 @@ Installation
 ============
 
 
-    git clone https://github.com/martinarrieta/vagrant-fabric 
-    vagrant up
+    git clone https://github.com/greemo/vagrant-fabric 
+    vagrant up --no-provision
 
-Get a coffee and wait until this process finish 
+Get a cookie and wait until this process finish. We don't provision in the first round, as we need all servers running to provision.
+
+    vagrant provision
+
+Get a coffee and wait until this process finish.
  
 Basic commands
 ==============
@@ -97,14 +101,90 @@ This command will run all the ansible playbooks, the VM must be "UP".
 
 For example: 
 
-    $ vagrant provision node3
+    $ vagrant provision node1
     [node3] Running provisioner: ansible...
     PLAY [all] ********************************************************************
     ...
     PLAY RECAP ********************************************************************
-    node3                      : ok=14   changed=1   unreachable=0    failed=0
+    node1                      : ok=14   changed=1   unreachable=0    failed=0
  
 Again, the important one is "failed=0" :)
+
+Using the System
+-------------
+Make sure all the resources are configured correctly
+
+    192.168.1.200$ sudo crm_mon --one-shot -V
+    Last updated: Tue May 17 00:13:33 2016
+    Last change: Tue May 17 00:04:35 2016
+    Stack: classic openais (with plugin)
+    Current DC: node1 - partition with quorum
+    Version: 1.1.11-97629de
+    2 Nodes configured, 2 expected votes
+    8 Resources configured
+
+    Online: [ node1 node2 ]
+
+    Resource Group: g_mysql
+     p_fs_mysql (ocf::heartbeat:Filesystem):    Started node1 
+     p_ip_mysql (ocf::heartbeat:IPaddr2):       Started node1 
+     p_mysql    (ocf::heartbeat:mysql): Started node1 
+     p_fabric_mysql     (ocf::heartbeat:mysql-fabric):  Started node1 
+    Master/Slave Set: ms_drbd_mysql [p_drbd_mysql]
+     Masters: [ node1 ]
+     Slaves: [ node2 ]
+    Clone Set: cl_ping [p_ping]
+     Started: [ node1 node2 ]
+
+Make sure fabric is running
+
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group lookup_groups
+    Fabric UUID:  5ca1ab1e-a007-feed-f00d-cab3fe13249e
+    Time-To-Live: 1
+    
+    group_id description failure_detector master_uuid
+    -------- ----------- ---------------- -----------
+
+Check the health of the mysql ha group
+
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group health ha
+    Fabric UUID:  5ca1ab1e-a007-feed-f00d-cab3fe13249e
+    Time-To-Live: 1
+    
+    uuid is_alive    status is_not_running is_not_configured io_not_running sql_not_running io_error sql_error
+    ------------------------------------ -------- --------- -------------- ----------------- -------------- --------------- -------- ---------
+    ad56f523-1bfd-11e6-8962-08002782a589        1   PRIMARY              0                 0              0               0    False     False
+    ae0491ad-1bfd-11e6-8962-08002782a589        1 SECONDARY              0                 0              1               1    False     False
+
+    issue
+    -----
+
+Recovering an ok slave
+-------------
+- move the FAULTY server to SPARE, then to SECONDARY via mysqlfabric
+- If this doesn't work, perform the messed-up slave instructions below.
+
+
+Recovering a messed-up slave
+-------------
+- stop the mysql server on the messed-up slave (sudo service mysqld stop)
+- remove the rm -rf /var/lib/mysql/*
+- comment out the log_bin and gtid_mode entries in /etc/my.cnf
+- start the server (sudo service mysqld start)
+- add the fabric_slave user:
+
+    sudo mysql
+    create user 'fabric_slave'@'192.168.70.0/255.255.255.0' IDENTIFIED BY 'f4bric';
+    
+    grant ALTER,CREATE,DELETE,DROP,INSERT,SELECT,UPDATE on mysql_fabric.* TO 'fabric_slave'@'192.168.70.0/255.255.255.0';
+    
+    grant DELETE,PROCESS,RELOAD,REPLICATION CLIENT,REPLICATION SLAVE,SELECT,SUPER,TRIGGER on *.* to 'fabric_slave'@'192.168.70.0/255.255.255.0';
+    
+    commit;
+
+- un-comment the log_bin and gtid_mode entries in /etc/my.cnf
+- restart the mysql server (sudo service mysqld restart)
+
 
 Percona Webinar command transcript
 -------------
