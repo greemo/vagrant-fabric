@@ -57,7 +57,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :ansible do |ansible|
     ansible.groups = {
       "masters" => ['node1', 'node2'],
-      "slaves" => ['node1', 'node2']
+      "slaves" => ['node1', 'node2'],
+      "clients" => ['node1', 'node2']
     }
     ansible.host_vars = {
       "node1" => {"server_id" => 1, "primary" => true},

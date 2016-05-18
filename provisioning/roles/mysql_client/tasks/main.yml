@@ -1,5 +1,0 @@
-- name: Installing MySQL repository.
-  yum: name=http://repo.mysql.com/mysql-community-release-el6-5.noarch.rpm state=present
-
-- name: Installing mysql-community-client
-  yum: pkg=mysql-community-client state=latest

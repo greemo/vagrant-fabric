@@ -30,11 +30,40 @@
 
 - name: Set up pacemaker
   command: pcs cluster cib-push /tmp/cib.xml
+  register: pcs_status
+  failed_when: "pcs_status.rc != 0 and 'Update was older than existing configuration' not in pcs_status.stderr"
 
-# - name: Add slave nodes to the ha group
-# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group create ha
-# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node1
-# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node2
-# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group promote ha
-# mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group activate ha
-
+# We have to do the below after the slaves are active.
+#
+#- name: Check if ha group exists
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group lookup_groups --group_id=ha
+#  register: ha_group_check
+#  failed_when: (ha_group_check.rc != 0) and ('Group (ha) does not exist' not in ha_group_check.stderr)
+#
+#- name: Create the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group create ha
+#  when: ha_group_check.rc != 0
+#
+#- name: Check nodes in group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group lookup_servers ha
+#  register: ha_node_check
+#
+#- name: Add slave node1 to the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node1
+#  when: "'node1:3306' not in ha_group_check.stdout"
+#
+#- name: Add slave node2 to the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node2
+#  when: "'node2:3306' not in ha_group_check.stdout"
+#
+#- name: Check group health
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group health ha
+#  register: ha_group_check
+#
+#- name: Promote the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group promote ha
+#  when: "'PRIMARY' not in ha_group_check.stdout"
+#
+#- name: Activate failover for the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group activate ha
+#

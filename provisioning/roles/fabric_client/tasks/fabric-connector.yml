@@ -1,2 +1,0 @@
-- name: Installing Python MySQL connector
-  yum: name=mysql-connector-python state=latest

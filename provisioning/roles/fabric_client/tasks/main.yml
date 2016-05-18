@@ -1,1 +1,26 @@
-- include: fabric-connector.yml
+- name: Installing MySQL repository.
+  yum: name=http://repo.mysql.com/mysql-community-release-el6-5.noarch.rpm state=present
+
+- name: Installing mysql-community-client
+  yum: pkg=mysql-community-client state=latest
+
+- name: Install mysql-router
+  yum: pkg=mysql-router state=latest
+
+- name: Install expect (required for the mysqlrouter service)
+  yum: pkg=expect state=latest
+
+- name: Install the mysqlrouter service init script.
+  copy: src=etc/init.d/mysqlrouter dest=/etc/init.d/mysqlrouter mode=0544
+
+- name: Install the mysqlrouter service configuration.
+  copy: src=etc/sysconfig/mysqlrouter dest=/etc/sysconfig/mysqlrouter mode=0400
+
+- name: Install the mysqlrouter deamon script.
+  copy: src=etc/mysqlrouter/daemon dest=/etc/mysqlrouter/daemon mode=0544
+
+- name: Install the mysqlrouter configuration.
+  copy: src=etc/mysqlrouter/mysqlrouter.ini dest=/etc/mysqlrouter/mysqlrouter.ini mode=0400
+
+- name: Start the mysqlrouter service
+  service: name=mysqlrouter state=started enabled=yes
