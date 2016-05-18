@@ -159,6 +159,11 @@ Check the health of the mysql ha group
     issue
     -----
 
+Moving the resource group to another node
+-------------
+    sudo pcs resource move g_mysql node1
+
+
 Recovering an ok slave
 -------------
 - move the FAULTY server to SPARE, then to SECONDARY via mysqlfabric
