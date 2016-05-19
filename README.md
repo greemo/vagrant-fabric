@@ -145,6 +145,15 @@ Make sure fabric is running
     group_id description failure_detector master_uuid
     -------- ----------- ---------------- -----------
 
+Create the ha group and add nodes
+
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group create ha
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node1
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node2
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group promote ha
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group activate ha
+    
+
 Check the health of the mysql ha group
 
     192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group health ha
@@ -167,7 +176,12 @@ Moving the resource group to another node
 Recovering an ok slave
 -------------
 - move the FAULTY server to SPARE, then to SECONDARY via mysqlfabric
-- If this doesn't work, perform the messed-up slave instructions below.
+
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg server set_status <uuid> spare
+    
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg server set_status <uuid> secondary
+
+- If this doesn't work, perform the messed-up slave recovery instructions below.
 
 
 Recovering a messed-up slave
