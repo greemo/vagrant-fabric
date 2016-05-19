@@ -1,3 +1,7 @@
+# This is needed by the mysql_user ansible command.
+- name: Installing MySQL-python
+  yum: pkg=MySQL-python state=latest
+
 - name: Set the Mysql server id
   ini_file: dest=/etc/my.cnf
             section=mysqld

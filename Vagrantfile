@@ -13,6 +13,9 @@ fabric_nodes = {
   'node2' => {
     'ip' => '192.168.70.102',
   },
+  'node3' => {
+    'ip' => '192.168.70.103',
+  },
 }
 
 VAGRANTFILE_API_VERSION = "2"
@@ -57,12 +60,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :ansible do |ansible|
     ansible.groups = {
       "masters" => ['node1', 'node2'],
-      "slaves" => ['node1', 'node2'],
+      "slaves" => ['node1', 'node2', 'node3'],
       "clients" => ['node1', 'node2']
     }
     ansible.host_vars = {
       "node1" => {"server_id" => 1, "primary" => true},
-      "node2" => {"server_id" => 2}
+      "node2" => {"server_id" => 2},
+      "node3" => {"server_id" => 3},
     }
     ansible.verbose = 'vv'
     ansible.sudo = true
