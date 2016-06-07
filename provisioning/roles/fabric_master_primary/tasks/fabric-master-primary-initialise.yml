@@ -26,10 +26,10 @@
   when: fabric_store_status.rc != 0
 
 - name: Install temporary pacemaker config
-  copy: src=tmp/cib.xml dest=/tmp/cib.xml
+  copy: src=pacemaker/cib.xml dest=/tmp/cib.xml
 
 - name: Set up pacemaker
-  command: pcs cluster cib-push /tmp/cib.xml
+  command: pcs cluster cib-push /tmp/cib.xml --config
   register: pcs_status
   failed_when: "pcs_status.rc != 0 and 'Update was older than existing configuration' not in pcs_status.stderr"
 

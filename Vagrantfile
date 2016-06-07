@@ -61,6 +61,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.groups = {
       "masters" => ['node1', 'node2'],
       "slaves" => ['node1', 'node2', 'node3'],
+      "cluster" => ['node1', 'node2', 'node3'],
       "clients" => ['node1', 'node2']
     }
     ansible.host_vars = {

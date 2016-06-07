@@ -1,0 +1,3 @@
+- include: cluster-packages.yml
+- include: cluster-config.yml
+- include: cluster-services.yml

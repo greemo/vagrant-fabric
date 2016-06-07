@@ -1,0 +1,14 @@
+- name: Install ccs
+  yum: name=ccs state=latest
+
+- name: Install pcs
+  yum: name=pcs state=latest
+
+- name: Install cman
+  yum: name=cman state=latest
+
+- name: Install resource-agents
+  yum: name=resource-agents state=latest
+
+- name: Install Pacemaker
+  yum: name=pacemaker state=latest

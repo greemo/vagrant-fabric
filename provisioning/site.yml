@@ -1,3 +1,4 @@
+- include: cluster.yml
 - include: fabric-masters.yml
 - include: fabric-slaves.yml
 - include: fabric-clients.yml

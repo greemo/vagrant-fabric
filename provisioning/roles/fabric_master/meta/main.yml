@@ -1,3 +1,4 @@
 dependencies:
-    - { role: fabric_host }
+    - { role: cluster_node }
+    - { role: system_host }
     - { role: mysql_server }

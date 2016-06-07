@@ -168,41 +168,55 @@ Check the health of the mysql ha group
     issue
     -----
 
-Moving the resource group to another node
+Moving the Pacemaker resource group to another node
 -------------
     sudo pcs resource move g_mysql node1
 
 
-Recovering an ok slave
+Changing the fabric master
+-------------
+    sudo pcs resource move g_mysql node1
+
+Recovering an ok fabric slave
 -------------
 - move the FAULTY server to SPARE, then to SECONDARY via mysqlfabric
 
-    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg server set_status <uuid> spare
-    
+    ```
+    192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg server set_status <uuid> spare 
     192.168.1.200$ sudo mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg server set_status <uuid> secondary
+    ```
 
 - If this doesn't work, perform the messed-up slave recovery instructions below.
 
 
-Recovering a messed-up slave
+Recovering a messed-up fabric slave
 -------------
-- stop the mysql server on the messed-up slave (sudo service mysqld stop)
-- remove the rm -rf /var/lib/mysql/*
+- stop the mysql server on the messed-up slave
+
+    ```sudo service mysqld stop```
+
+- remove the mysql data
+
+    ```sudo rm -rf /var/lib/mysql/*```
+
 - comment out the log_bin and gtid_mode entries in /etc/my.cnf
-- start the server (sudo service mysqld start)
+- start the server
+
+    ```sudo service mysqld start```
+
 - add the fabric_slave user:
 
-    sudo mysql
+    ```sudo mysql
     create user 'fabric_slave'@'192.168.70.0/255.255.255.0' IDENTIFIED BY 'f4bric';
-    
     grant ALTER,CREATE,DELETE,DROP,INSERT,SELECT,UPDATE on mysql_fabric.* TO 'fabric_slave'@'192.168.70.0/255.255.255.0';
-    
     grant DELETE,PROCESS,RELOAD,REPLICATION CLIENT,REPLICATION SLAVE,SELECT,SUPER,TRIGGER on *.* to 'fabric_slave'@'192.168.70.0/255.255.255.0';
-    
     commit;
+    ```
 
 - un-comment the log_bin and gtid_mode entries in /etc/my.cnf
-- restart the mysql server (sudo service mysqld restart)
+- restart the mysql server
+
+    ```sudo service mysqld restart```
 
 
 Percona Webinar command transcript

@@ -4,21 +4,6 @@
 - name: Install DRBD kernel module
   yum: name=kmod-drbd83 state=latest
 
-- name: Install ccs
-  yum: name=ccs state=latest
-
-- name: Install pcs
-  yum: name=pcs state=latest
-
-- name: Install cman
-  yum: name=cman state=latest
-
-- name: Install resource-agents
-  yum: name=resource-agents state=latest
-
-- name: Install Pacemaker
-  yum: name=pacemaker state=latest
-
 - name: Install Service runlevel configuration tool (ntsysv)
   yum: name=ntsysv state=latest
 
