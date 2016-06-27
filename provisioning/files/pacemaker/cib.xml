@@ -1,0 +1,134 @@
+<cib crm_feature_set="3.0.9" validate-with="pacemaker-2.0" epoch="21" num_updates="0" admin_epoch="0" cib-last-written="Tue Jun 07 04:54:08 2016" have-quorum="1" dc-uuid="node1">
+  <configuration>
+
+    <crm_config>
+      <cluster_property_set id="cib-bootstrap-options">
+        <nvpair id="cib-bootstrap-options-dc-version" name="dc-version" value="1.1.11-97629de"/>
+        <nvpair id="cib-bootstrap-options-cluster-infrastructure" name="cluster-infrastructure" value="classic openais (with plugin)"/>
+        <nvpair id="cib-bootstrap-options-expected-quorum-votes" name="expected-quorum-votes" value="3"/>
+        <nvpair name="no-quorum-policy" value="stop" id="cib-bootstrap-options-no-quorum-policy"/>
+        <nvpair name="stonith-enabled" value="false" id="cib-bootstrap-options-stonith-enabled"/>
+      </cluster_property_set>
+    </crm_config>
+
+    <nodes>
+      <!-- All the resources will run on all the nodes specified below unless configured otherwise.-->
+      <node id="node1" uname="node1"/>
+      <node id="node2" uname="node2"/>
+      <!-- Node 3 is a standby, quorum-only node -->
+      <node id="node3" uname="node3">
+        <instance_attributes id="nodes-node3">
+          <nvpair id="nodes-node3-standby" name="standby" value="on"/>
+        </instance_attributes>
+      </node>
+    </nodes>
+
+    <resources>
+      <!-- The mysql group for the fabric master mysql database. This database only holds the fabric metadata.-->
+      <group id="g_mysql">
+        <primitive id="p_fs_mysql" class="ocf" provider="heartbeat" type="Filesystem">
+          <instance_attributes id="p_fs_mysql-instance_attributes">
+            <nvpair name="device" value="/dev/drbd0" id="p_fs_mysql-instance_attributes-device"/>
+            <nvpair name="directory" value="/var/lib/mysql-fabric-master" id="p_fs_mysql-instance_attributes-directory"/>
+            <nvpair name="fstype" value="ext4" id="p_fs_mysql-instance_attributes-fstype"/>
+          </instance_attributes>
+        </primitive>
+        <primitive id="p_ip_mysql" class="ocf" provider="heartbeat" type="IPaddr2">
+          <instance_attributes id="p_ip_mysql-instance_attributes">
+            <nvpair name="ip" value="192.168.70.200" id="p_ip_mysql-instance_attributes-ip"/>
+            <nvpair name="cidr_netmask" value="24" id="p_ip_mysql-instance_attributes-cidr_netmask"/>
+            <nvpair name="nic" value="eth1" id="p_ip_mysql-instance_attributes-nic"/>
+          </instance_attributes>
+        </primitive>
+        <primitive id="p_mysql" class="ocf" provider="heartbeat" type="mysql">
+          <instance_attributes id="p_mysql-instance_attributes">
+            <nvpair name="binary" value="/usr/sbin/mysqld" id="p_mysql-instance_attributes-binary"/>
+            <nvpair name="config" value="/var/lib/mysql-fabric-master/my.cnf" id="p_mysql-instance_attributes-config"/>
+            <nvpair name="datadir" value="/var/lib/mysql-fabric-master/data" id="p_mysql-instance_attributes-datadir"/>
+            <nvpair name="pid" value="/var/run/mysqld/mysql-fabric-master.pid" id="p_mysql-instance_attributes-pid"/>
+            <nvpair name="socket" value="/var/run/mysqld/mysql-fabric-master.sock" id="p_mysql-instance_attributes-socket"/>
+            <nvpair name="user" value="mysql" id="p_mysql-instance_attributes-user"/>
+            <nvpair name="group" value="mysql" id="p_mysql-instance_attributes-group"/>
+            <nvpair name="additional_parameters" value="--bind-address=localhost" id="p_mysql-instance_attributes-additional_parameters"/>
+          </instance_attributes>
+          <operations>
+            <op name="start" timeout="120s" interval="0" id="p_mysql-start-0"/>
+            <op name="stop" timeout="120s" interval="0" id="p_mysql-stop-0"/>
+            <op name="monitor" interval="20s" timeout="30s" id="p_mysql-monitor-20s"/>
+          </operations>
+        </primitive>
+        <primitive id="p_fabric_mysql" class="ocf" provider="heartbeat" type="mysql-fabric">
+          <instance_attributes id="p_fabric_mysql-instance_attributes">
+            <nvpair name="binary" value="/usr/bin/mysqlfabric" id="p_fabric_mysql-instance_attributes-binary"/>
+            <nvpair name="config" value="/var/lib/mysql-fabric-master/fabric.cfg" id="p_fabric_mysql-instance_attributes-config"/>
+          </instance_attributes>
+          <operations>
+            <op name="start" timeout="120s" interval="0" id="p_fabric_mysql-start-0"/>
+            <op name="stop" timeout="120s" interval="0" id="p_fabric_mysql-stop-0"/>
+            <op name="monitor" interval="20s" timeout="30s" id="p_fabric_mysql-monitor-20s"/>
+          </operations>
+        </primitive>
+        <meta_attributes id="g_mysql-meta_attributes">
+          <nvpair name="target-role" value="Started" id="g_mysql-meta_attributes-target-role"/>
+        </meta_attributes>
+      </group>
+      <!-- The resource for the drbd cluster -->
+      <master id="ms_drbd_mysql">
+        <meta_attributes id="ms_drbd_mysql-meta_attributes">
+          <nvpair name="master-max" value="1" id="ms_drbd_mysql-meta_attributes-master-max"/>
+          <nvpair name="master-node-max" value="1" id="ms_drbd_mysql-meta_attributes-master-node-max"/>
+          <nvpair name="clone-max" value="2" id="ms_drbd_mysql-meta_attributes-clone-max"/>
+          <nvpair name="clone-node-max" value="1" id="ms_drbd_mysql-meta_attributes-clone-node-max"/>
+          <nvpair name="notify" value="true" id="ms_drbd_mysql-meta_attributes-notify"/>
+        </meta_attributes>
+        <primitive id="p_drbd_mysql" class="ocf" provider="linbit" type="drbd">
+          <instance_attributes id="p_drbd_mysql-instance_attributes">
+            <nvpair name="drbd_resource" value="clusterdb" id="p_drbd_mysql-instance_attributes-drbd_resource"/>
+          </instance_attributes>
+          <operations>
+            <op name="start" timeout="120s" interval="0" id="p_drbd_mysql-start-0"/>
+            <op name="stop" timeout="120s" interval="0" id="p_drbd_mysql-stop-0"/>
+            <op name="monitor" interval="15s" id="p_drbd_mysql-monitor-15s"/>
+          </operations>
+        </primitive>
+      </master>
+      <!--
+        We also need to run the fabric slaves under the cluster in case they get partitioned, so they shut down and
+        cannot continue to run as master for example. I.e. All running mysql instances are contactable by the fabric
+        process.
+      -->
+      <primitive id="p_mysql_slave" class="ocf" provider="heartbeat" type="mysql">
+        <instance_attributes id="p_mysql_slave-instance_attributes">
+          <nvpair name="binary" value="/usr/sbin/mysqld" id="p_mysql_slave-instance_attributes-binary"/>
+          <nvpair name="config" value="/etc/my.cnf" id="p_mysql_slave-instance_attributes-config"/>
+          <nvpair name="datadir" value="/var/lib/mysql" id="p_mysql_slave-instance_attributes-datadir"/>
+          <nvpair name="pid" value="/var/run/mysqld/mysqld.pid" id="p_mysql_slave-instance_attributes-pid"/>
+          <nvpair name="socket" value="/var/lib/mysql/mysql.sock" id="p_mysql_slave-instance_attributes-socket"/>
+          <nvpair name="user" value="mysql" id="p_mysql_slave-instance_attributes-user"/>
+          <nvpair name="group" value="mysql" id="p_mysql_slave-instance_attributes-group"/>
+        </instance_attributes>
+        <operations>
+          <op name="start" timeout="120s" interval="0" id="p_mysql-start-0"/>
+          <op name="stop" timeout="120s" interval="0" id="p_mysql-stop-0"/>
+          <op name="monitor" interval="20s" timeout="30s" id="p_mysql-monitor-20s"/>
+        </operations>
+      </primitive>
+    </resources>
+
+    <constraints>
+      <rsc_colocation id="c_mysql_on_drbd" score="INFINITY" rsc="g_mysql" with-rsc="ms_drbd_mysql" with-rsc-role="Master"/>
+      <rsc_location id="l_drbd_master_prefer_node1" rsc="ms_drbd_mysql" node="node1" score="50"/>
+      <!-- Node 3 is a standby, quorum-only node, so don't allow any of the services to run there. -->
+      <rsc_location id="node3-quorum-only_fabric" rsc="g_mysql" node="node3" score="-INFINITY"/>
+      <rsc_location id="node3-quorum-only_drbd" rsc="ms_drbd_mysql" node="node3" score="-INFINITY"/>
+      <rsc_order id="o_drbd_before_mysql" score="INFINITY" first="ms_drbd_mysql" first-action="promote" then="g_mysql" then-action="start"/>
+    </constraints>
+
+    <rsc_defaults>
+      <meta_attributes id="rsc-options">
+        <nvpair name="resource-stickiness" value="100" id="rsc-options-resource-stickiness"/>
+      </meta_attributes>
+    </rsc_defaults>
+
+  </configuration>
+</cib>

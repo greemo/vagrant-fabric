@@ -1,0 +1,18 @@
+#!/bin/bash
+
+[ $UID -eq 0 ] && [ -e /etc/sysconfig/mysqlrouterd ] && . /etc/sysconfig/mysqlrouterd
+
+expect -c "
+log_user 0
+#set user [lindex $argv 0]
+
+#set password [lindex $argv 1]
+
+spawn mysqlrouter
+expect \".*\"
+expect \"Password for *, user ${FABRIC_USER}: \"
+send -- \"${FABRIC_PASS}\n\"
+set timeout -1
+#interact
+expect eof
+" &

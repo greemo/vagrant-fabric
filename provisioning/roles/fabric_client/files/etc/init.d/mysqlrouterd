@@ -1,0 +1,74 @@
+#!/bin/sh
+#
+# chkconfig: 2345 20 80
+# description: Runs the mysqlrouter as a daemon. This script is only suitable for centos
+#
+
+[ -d /etc/mysqlrouterd/ ] || {
+    [ "$1" = "status" ] && exit 4 || exit 6
+}
+
+prog="mysqlrouterd"
+exec="/etc/mysqlrouterd/daemon"
+lockfile=/var/lock/subsys/$prog
+config=/etc/mysqlrouter/mysqlrouter.ini
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+start() {
+    status $exec
+    RUNNING=$?
+    if [ $RUNNING -eq 0 ]; then
+        echo "$prog already running"
+        exit $RUNNING
+    fi
+    if [ $UID -ne 0 ] ; then
+        echo "User has insufficient privilege."
+        exit 4
+    fi
+    [ -f $config ] || exit 6
+    echo -n $"Starting $prog: "
+    daemon $exec
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+}
+
+stop() {
+    if [ $UID -ne 0 ] ; then
+        echo "User has insufficient privilege."
+        exit 4
+    fi
+    echo -n $"Stopping $prog: "
+    killproc $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+}
+
+restart() {
+    stop
+    start
+}
+
+
+case "$1" in
+    start)
+        $1
+        ;;
+    stop)
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    status)
+        status $prog
+        RETVAL=$?
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart}"
+        exit 2
+esac
+exit $RETVAL

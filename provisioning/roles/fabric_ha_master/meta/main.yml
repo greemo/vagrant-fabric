@@ -1,0 +1,3 @@
+dependencies:
+    - { role: cluster_node }
+    - { role: mysql_server }

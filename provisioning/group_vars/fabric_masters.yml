@@ -1,0 +1,2 @@
+drbd_resource_template: templates/etc/drbd.d/clusterdb.res.j2
+drbd_resource_name: clusterdb

@@ -7,20 +7,23 @@
 - name: Install mysql-router
   yum: pkg=mysql-router state=latest
 
-- name: Install expect (required for the mysqlrouter service)
+- name: Install expect (required for the mysqlrouterd service)
   yum: pkg=expect state=latest
 
-- name: Install the mysqlrouter service init script.
-  copy: src=etc/init.d/mysqlrouter dest=/etc/init.d/mysqlrouter mode=0544
+- name: Install the mysqlrouterd service init script.
+  copy: src=etc/init.d/mysqlrouterd dest=/etc/init.d/mysqlrouterd mode=0544
 
-- name: Install the mysqlrouter service configuration.
-  copy: src=etc/sysconfig/mysqlrouter dest=/etc/sysconfig/mysqlrouter mode=0400
+- name: Install the mysqlrouterd service configuration.
+  copy: src={{mysqlrouterd_sysconfig}} dest=/etc/sysconfig/mysqlrouterd mode=0400
 
-- name: Install the mysqlrouter deamon script.
-  copy: src=etc/mysqlrouter/daemon dest=/etc/mysqlrouter/daemon mode=0544
+- name: Ensure /etc/mysqlrouterd dir exists
+  file: path=/etc/mysqlrouterd state=directory
+
+- name: Install the mysqlrouterd deamon script.
+  copy: src=etc/mysqlrouterd/daemon dest=/etc/mysqlrouterd/daemon mode=0544
 
 - name: Install the mysqlrouter configuration.
-  copy: src=etc/mysqlrouter/mysqlrouter.ini dest=/etc/mysqlrouter/mysqlrouter.ini mode=0400
+  copy: src={{mysqlrouter_ini}} dest=/etc/mysqlrouter/mysqlrouter.ini mode=0400
 
-- name: Start the mysqlrouter service
-  service: name=mysqlrouter state=started enabled=yes
+- name: Start the mysqlrouterd service
+  service: name=mysqlrouterd state=started enabled=yes

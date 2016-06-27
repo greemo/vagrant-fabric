@@ -1,0 +1,27 @@
+- name: initiate the initial cluster synchronization
+  command: drbdadm -- --overwrite-data-of-peer primary {{drbd_resource_name}}
+
+- name: format drbd partition
+  filesystem: fstype=ext4 opts="-L{{drbd_resource_name}}" dev=/dev/drbd0
+
+- name: Disable checking of the {{drbd_resource_name}} file system
+  command: tune2fs -c 0 -i 0 /dev/drbd0
+
+- name: mount {{drbd_resource_name}} partition to mysql fabric-master data directory (/var/lib/mysql-fabric-master)
+  mount: name=/var/lib/mysql-fabric-master fstype=ext4 opts=noatime src=/dev/drbd0 state=mounted
+
+- name: Ensure mysql-fabric-master data dir exists
+  file: path=/var/lib/mysql-fabric-master/data state=directory
+
+- name: Set permissions on the mysql-fabric-master data dir to mysql
+  file: path=/var/lib/mysql-fabric-master/data owner=mysql group=mysql
+
+# pacemaker needs this config file to be only readable by the owner.
+- name: Add the fabric.cfg file.
+  template: src={{fabric_master_config_template}} dest=/var/lib/mysql-fabric-master/fabric.cfg mode=0400
+
+- name: Adding the /etc/my.cnf file for the fabric master db.
+  template: src={{fabric_master_mysql_config_template}} dest=/var/lib/mysql-fabric-master/my.cnf
+
+
+

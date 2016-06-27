@@ -1,0 +1,5 @@
+fabric_master_mysql_user: fabric_master
+fabric_master_mysql_pass: f4bric
+fabric_master_config_template: templates/mysql-fabric-master/fabric.cfg.j2
+fabric_master_mysql_config_template: templates/mysql-fabric-master/my.cnf.j2
+pacemaker_config_file: files/pacemaker/cib.xml

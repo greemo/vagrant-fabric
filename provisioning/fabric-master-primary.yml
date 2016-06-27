@@ -1,0 +1,4 @@
+- hosts: fabric_master_primary
+  roles:
+  - { role: fabric_ha_master_primary }
+

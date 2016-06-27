@@ -1,0 +1,2 @@
+mysqlrouter_ini: files/etc/mysqlrouter/mysqlrouter.ini
+mysqlrouterd_sysconfig: files/etc/sysconfig/mysqlrouterd

@@ -8,9 +8,23 @@
             option=server-id
             value={{ server_id }}
 
-# This will install the database as well if it doesn't exist.
+# We need to enable binary logging only after adding the user, due to http://bugs.mysql.com/bug.php?id=72281.
+- name: Disable Mysql Binary logging
+  ini_file: dest=/etc/my.cnf
+            section=mysqld
+            option=log_bin
+            state=absent
+
+- name: Disable Mysql GTID mode as it can only be used with bin logging
+  ini_file: dest=/etc/my.cnf
+            section=mysqld
+            option=gtid-mode
+            value=OFF
+
+# This will install the database as well if it doesn't exist. We want to start it, but not enable it, because it's the
+# cluster's job to enable it as appropriate.
 - name: (Re)start the MySQL service
-  service: name=mysqld state=started enabled=true
+  service: name=mysqld state=started enabled=false
 
 # MySQL Fabric uses the 'fabric_slave' user account to access all MySQL servers that it will manage.
 # In other words, the 'fabric_slave' user must be created on all slave MySQL servers
@@ -20,9 +34,9 @@
     login_port: 3306
     login_user: root
     login_password: ""
-    name: fabric_slave
-    host: 192.168.70.0/255.255.255.0
-    password: f4bric
+    name: "{{fabric_slave_mysql_user}}"
+    host: "{{fabric_slave_subnet}}"
+    password: "{{fabric_slave_mysql_pass}}"
     priv: "mysql_fabric.*:ALTER,CREATE,DELETE,DROP,INSERT,SELECT,UPDATE/*.*:DELETE,PROCESS,RELOAD,REPLICATION CLIENT,REPLICATION SLAVE,SELECT,SUPER,TRIGGER"
     state: present
 

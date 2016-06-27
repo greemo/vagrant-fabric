@@ -1,0 +1,70 @@
+# This will install the database as well if it doesn't exist.
+- name: Start the mysql-fabric-master instance
+  service: name=mysql-fabric-master state=started enabled=no
+
+# MySQL Fabric uses the 'fabric_master' user account to access the master MySQL server.
+# The master mysql server is that which holds the fabric node data, not the main db data.
+- name: Adding master mysql user
+  mysql_user:
+    login_host: '127.0.0.1'
+    login_port: 13306
+    login_user: root
+    login_password: ""
+    name: "{{fabric_master_mysql_user}}"
+    host: 'localhost'
+    password: "{{fabric_master_mysql_pass}}"
+    priv: "fabric.*:ALTER,CREATE,CREATE VIEW,DELETE,DROP,EVENT,INDEX,INSERT,REFERENCES,SELECT,UPDATE"
+    state: present
+
+- name: Check if the fabric store is already in the database
+  shell: mysql -S /var/run/mysqld/mysql-fabric-master.sock -e 'SHOW DATABASES;' | grep fabric
+  register: fabric_store_status
+  ignore_errors: True
+
+- name: Create the fabric state store in the database
+  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg --param protocol.xmlrpc.address=localhost:32274 --param protocol.mysql.address=localhost:32275 manage setup
+  when: fabric_store_status.rc != 0
+
+- name: Install temporary pacemaker config
+  copy: src={{pacemaker_config_file}} dest=/tmp/cib.xml
+
+- name: Set up pacemaker
+  command: pcs cluster cib-push /tmp/cib.xml --config
+  register: pcs_status
+  failed_when: "pcs_status.rc != 0 and 'Update was older than existing configuration' not in pcs_status.stderr"
+  retries: 5
+
+# We have to do the below after the slaves are active.
+#
+#- name: Check if ha group exists
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group lookup_groups --group_id=ha
+#  register: ha_group_check
+#  failed_when: (ha_group_check.rc != 0) and ('Group (ha) does not exist' not in ha_group_check.stderr)
+#
+#- name: Create the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group create ha
+#  when: ha_group_check.rc != 0
+#
+#- name: Check nodes in group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group lookup_servers ha
+#  register: ha_node_check
+#
+#- name: Add slave node1 to the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node1
+#  when: "'node1:3306' not in ha_group_check.stdout"
+#
+#- name: Add slave node2 to the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group add ha node2
+#  when: "'node2:3306' not in ha_group_check.stdout"
+#
+#- name: Check group health
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group health ha
+#  register: ha_group_check
+#
+#- name: Promote the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group promote ha
+#  when: "'PRIMARY' not in ha_group_check.stdout"
+#
+#- name: Activate failover for the ha group
+#  command: mysqlfabric --config /var/lib/mysql-fabric-master/fabric.cfg group activate ha
+#
