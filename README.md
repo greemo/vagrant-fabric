@@ -1,3 +1,7 @@
+# I have had heaps of problems with the fabric/drbd/pacemaker/mysql/mysqlrouter stack regarding the state of fabric and state of the slave servers getting out of sync.
+
+# See https://github.com/greemo/mysql-ha-pacemaker-semisync for a much more stable, and simple setup, with the same HA guarantee
+
 Requirements
 ============
 
